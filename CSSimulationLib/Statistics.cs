@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ComputationLib;
+using MathNet.Numerics.Distributions;
 
 namespace SimulationLib
 {
@@ -101,8 +97,9 @@ namespace SimulationLib
             if (_count <= 1)
                 return 0;
 
-            double coefficient = StatisticalFunctions.TInv_TwoTails(significanceLevel, (int)_count - 1);
-            return coefficient * this.StErr;
+            double coeff = StudentT.InvCDF(0, 1, _count - 1, significanceLevel);
+            //double coefficient = StatisticalFunctions.TInv_TwoTails(significanceLevel, (int)_count - 1);
+            return coeff * this.StErr;
         }        
         /// <summary>
         /// 95% confidence interval reflects a significance level of 0.05
@@ -146,25 +143,12 @@ namespace SimulationLib
         public void Record(double obs)
         {
             this.Record(obs, _count - 1);
-
-            //double inc = obs - _mean;
-            //++_count;
-            //_mean += inc / _count; // incremental chance in mean
-            //_sumOfVarNominator += (_count - 1) * inc * (inc / _count); // running variance numerator
-            //_total += obs;
-
-            //if (_count > 1) _variance = _sumOfVarNominator / (_count - 1);
-            //if (obs < _min) _min = obs;
-            //if (obs > _max) _max = obs;
-
-            //if (_ifStoreObservations)
-            //    _observations[_count-1] = obs;
         }
         public void Record(double obs, long locationIndex)
         {
             double inc = obs - _mean;
             ++_count;
-            _mean += inc / _count; // incremental chance in mean
+            _mean += inc / _count; // incremental change in mean
             _sumOfVarNominator += (_count - 1) * inc * (inc / _count); // running variance numerator
             _total += obs;
 
@@ -273,17 +257,5 @@ namespace SimulationLib
                 if (_count > 1) _variance = tot / (_obsPreviousTime - _baseTime);
             }
         }
-
-        //Public Sub Record(ByVal obsTime As Double, ByVal obsValue As Double, ByVal interestRate As Double, ByVal numOfDiscountingPeriods As Integer)
-        //    _count = _count + 1
-        //    If obsTime <> _baseTime Then
-        //        tot = tot + (_obsPreviousTime - _baseTime) * (obsTime - _obsPreviousTime) * ((_obsValue - _mean) ^ 2) / (obsTime - _baseTime)
-        //        _mean = (_mean * (_obsPreviousTime - _baseTime) + (obsTime - _obsPreviousTime) * _obsValue) / (obsTime - _baseTime)
-        //    End If
-        //    _obsPreviousTime = obsTime
-        //    _obsValue = obsValue / ((1 + interestRate) ^ numOfDiscountingPeriods)
-        //    If _obsValue < _minimum Then _minimum = _obsValue
-        //    If _obsValue > _maximum Then _maximum = _obsValue
-        //End Sub
     }
 }

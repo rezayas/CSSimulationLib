@@ -7,7 +7,7 @@ using System.IO;
 
 namespace SimulationLib
 {
-    static class cSimulationSupport
+    static class SimulationSupport
     {
         private static StreamWriter _traceFile;
         private static bool _traceOn = false; // shoudl the simulation be traced
@@ -16,7 +16,7 @@ namespace SimulationLib
         public static void Initialize(bool traceOn)
         {
             // reset the calender
-            EventCalendar.Reset();
+            SimulationEventCalendar.Reset();
             if (traceOn == true) 
             {
                 _traceOn = true;
@@ -35,21 +35,21 @@ namespace SimulationLib
                 while (toContinue)
                 {
                     // get the next event
-                    nextEvent = EventCalendar.GetNextEvent();
+                    nextEvent = SimulationEventCalendar.GetNextEvent();
                     if (nextEvent == null)
                         toContinue = false;
                     else
                     {
                         // advance time
-                        EventCalendar.CurrentTime = nextEvent.EventTime;
+                        SimulationEventCalendar.CurrentTime = nextEvent.EventTime;
                         // if simulation should be ended
-                        if (EventCalendar.CurrentTime > simulationLength)
+                        if (SimulationEventCalendar.CurrentTime > simulationLength)
                             if (_traceOn == true)
                             {
                                 _traceFile.WriteLine("Simulation replication stopped.");
                                 toContinue = false;
                             }
-                        if (_traceOn == true) _traceFile.WriteLine(" At time = " + EventCalendar.CurrentTime.ToString("0.000"));
+                        if (_traceOn == true) _traceFile.WriteLine(" At time = " + SimulationEventCalendar.CurrentTime.ToString("0.000"));
                         // execute next event
                         nextEvent.EventProcess();
                     }

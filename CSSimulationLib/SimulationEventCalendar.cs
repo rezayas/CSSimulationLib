@@ -4,14 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace SimulationLib
 {
-    static class EventCalendar
+    static class SimulationEventCalendar
     {
         static private double _tNow;
-        static private ArrayList _colEvents = new ArrayList();        
+        static private List<SimulationEvent> _colEvents = new List<SimulationEvent>();
 
         // Properties
         static public double CurrentTime
@@ -23,7 +22,7 @@ namespace SimulationLib
                     _tNow = value;
                 else
                 {
-                    MessageBox.Show("Error: trying to set an event time less than current time.", "Error!", MessageBoxButtons.OK);                    
+                    Console.WriteLine("Error: trying to set an event time less than current time.");                    
                 }
             }
         }
@@ -44,8 +43,8 @@ namespace SimulationLib
             }            
             
             int numOfEvents = _colEvents.Count;
-            double lastEventTime = ((SimulationEvent)_colEvents[numOfEvents - 1]).EventTime;
-            int lastEventPriority = ((SimulationEvent)_colEvents[numOfEvents - 1]).EventPriority;
+            double lastEventTime = _colEvents[numOfEvents - 1].EventTime;
+            int lastEventPriority = _colEvents[numOfEvents - 1].EventPriority;
 
             // if this event should be scheduled last in the calendar
             if (lastEventTime < addedEvent.EventTime ||
@@ -60,14 +59,14 @@ namespace SimulationLib
                 while (i < numOfEvents)
                 {
                     // if event i has greater time, insert the event here
-                    if (((SimulationEvent)_colEvents[i]).EventTime > addedEvent.EventTime)
+                    if (_colEvents[i].EventTime > addedEvent.EventTime)
                     {
                         _colEvents.Insert(i, addedEvent);
                         return;
                     }
                     else // if event i has the same time as the new event
                     {
-                        if (((SimulationEvent)_colEvents[i]).EventPriority > addedEvent.EventPriority)
+                        if (_colEvents[i].EventPriority > addedEvent.EventPriority)
                         {
                             _colEvents.Insert(i, addedEvent);
                             return;
@@ -95,7 +94,7 @@ namespace SimulationLib
             // get the event
             SimulationEvent thisEvent = (SimulationEvent)_colEvents[index];
             // remove the event
-            _colEvents.Remove(index);
+            _colEvents.RemoveAt(index);
             // return the event
             return thisEvent;
         }
@@ -107,7 +106,7 @@ namespace SimulationLib
             foreach (SimulationEvent thisEvent in _colEvents)
             {
                 if (thisEvent.ToString() == eventType.ToString())
-                    _colEvents.Remove(eventIndex);
+                    _colEvents.RemoveAt(eventIndex);
                 ++eventIndex;
             }
         }

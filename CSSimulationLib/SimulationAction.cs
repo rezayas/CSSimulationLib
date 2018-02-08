@@ -28,7 +28,6 @@ namespace SimulationLib
             MutuallyExclusive = 3,
         }
 
-        // Fields
         int _index;
         int _ID;
         string _name;
@@ -129,7 +128,6 @@ namespace SimulationLib
             set { _numOfDecisionPeriodsOverWhichThisInterventionWasUsed = value; }
         }
 
-        // Methods
         // set up the time availability
         public void SetupAvailability(enumOnOffSwitchSetting onOffSwitchSetting, long timeIndexBecomeAvailable, long timeIndexBecomeUnavailable)
         {

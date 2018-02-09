@@ -7,55 +7,55 @@ using System.Threading.Tasks;
 namespace SimulationLib
 {
     public class SimulationAction
-    {
-        public enum enumOnOffSwitchSetting
+    {        
+        public enum EnumActionType : int
         {
-            Predetermined = 1,
-            Periodic = 2,
-            ThresholdBased = 3,
-            IntervalBased = 4,
-            Dynamic = 5
-        }
-        public enum enumSwitchValue
-        {
-            Off = 0,
-            On = 1,
-        }
-        public enum enumActionType : int
-        {
-            Default = 1,
+            Default = 1,    // represents the "no action" alternative that is always on
             Additive = 2,
-            MutuallyExclusive = 3,
         }
 
-        int _index;
-        int _ID;
+        int _index; // 0, 1, 2, ...
         string _name;
-        private enumActionType _type;
-        enumOnOffSwitchSetting _onOffSwitchSetting = enumOnOffSwitchSetting.Predetermined;
-        enumSwitchValue _predeterminedSwitchValue = enumSwitchValue.Off;
-
-        double _fixedCost;
+        private EnumActionType _actionType = EnumActionType.Default;
+        SimulationDecisionRule _decisionRule;
+        
+        // cost parameters
+        double _fixedCost;  // fixed cost to switch on
         double _costPerUnitOfTime;
         double _penaltyForSwitchingFromOnToOff;
+        
+        // availability
+        protected long _timeIndexBecomeAvailable;
+        protected long _timeIndexBecomeUnavailable;
+        protected bool _hasResourceCondition = false;
+        protected int _IDOfTheResourceRequiredToBeAvailable;
+        protected long _nOfTimeIndeciesDelayedToGoIntoEffectOnceTurnedOn = 0;
 
-        long _timeIndexBecomeAvailable;
-        long _timeIndexBecomeUnavailable;
-        bool _hasResourceCondition = false;
-        int _IDOfTheResourceRequiredToBeAvailable;
-
-        int _numOfSwitchesOccured;
-        bool _remainsOnOnceSwitchedOn;
-        private int _numOfDecisionPeriodsOverWhichThisInterventionWasUsed = 0;
+        // statistics
+        protected int _numOfSwitchesOccured;
+        protected int _numOfDecisionPeriodsOverWhichThisInterventionWasUsed = 0;
 
         // Instantiation
-        public SimulationAction(int indext, int ID, string name, enumActionType type)
+        public SimulationAction(
+            int indext, 
+            string name, 
+            EnumActionType actionType,
+            long timeIndexBecomeAvailable, 
+            long timeIndexBecomeUnavailable, 
+            long nOfTimeIndeciesDelayedToGoIntoEffectOnceTurnedOn,
+            ref SimulationDecisionRule decisionRule,
+            int IDOfTheResourceRequiredToBeAvailable = -1)
         {
             _index = indext;
-            _ID = ID;
             _name = name;
-            _type = type;
-            _hasResourceCondition = false;
+            _actionType = actionType;
+            _timeIndexBecomeAvailable = timeIndexBecomeAvailable;
+            _timeIndexBecomeUnavailable = timeIndexBecomeUnavailable;
+            _nOfTimeIndeciesDelayedToGoIntoEffectOnceTurnedOn = nOfTimeIndeciesDelayedToGoIntoEffectOnceTurnedOn;
+            _decisionRule = decisionRule;
+            _IDOfTheResourceRequiredToBeAvailable = IDOfTheResourceRequiredToBeAvailable;
+            if (_IDOfTheResourceRequiredToBeAvailable >= 0) { _hasResourceCondition = false; }
+
         }
 
         // Properties   
@@ -63,37 +63,15 @@ namespace SimulationLib
         {
             get { return _index; }
         }
-        public int ID
-        {
-            get { return _ID; }
-        }
         public string Name
         {
             get { return _name; }
         }
-        public enumActionType Type
+        public EnumActionType ActionType
         {
-            get { return _type; }
+            get { return _actionType; }
         }
-        public enumOnOffSwitchSetting OnOffSwitchSetting
-        {
-            get { return _onOffSwitchSetting; }
-            set { _onOffSwitchSetting = value; }
-        }
-        public enumSwitchValue PredeterminedSwitchValue
-        {
-            get { return _predeterminedSwitchValue; }
-            set { _predeterminedSwitchValue = value; }
-        }
-        public int NumOfSwitchesOccured
-        {
-            get { return _numOfSwitchesOccured; }
-            set { _numOfSwitchesOccured = value; }
-        }
-        public bool RemainsOnOnceSwitchedOn
-        {
-            get { return _remainsOnOnceSwitchedOn; }
-        }
+
         public double FixedCost
         {
             get { return _fixedCost; }
@@ -106,42 +84,16 @@ namespace SimulationLib
         {
             get { return _penaltyForSwitchingFromOnToOff; }
         }
-        public long TimeIndexBecomeAvailable
+
+        public int NumOfSwitchesOccured
         {
-            get { return _timeIndexBecomeAvailable; }
-        }
-        public long TimeIndexBecomeUnavailable
-        {
-            get { return _timeIndexBecomeUnavailable; }
-        }
-        public bool HasResourceCondition
-        {
-            get { return _hasResourceCondition; }
-        }
-        public int IDOfTheResourceRequiredToBeAvailable
-        {
-            get { return _IDOfTheResourceRequiredToBeAvailable; }
+            get { return _numOfSwitchesOccured; }
         }
         public int NumOfDecisionPeriodsOverWhichThisInterventionWasUsed
         {
             get { return _numOfDecisionPeriodsOverWhichThisInterventionWasUsed; }
-            set { _numOfDecisionPeriodsOverWhichThisInterventionWasUsed = value; }
         }
 
-        // set up the time availability
-        public void SetupAvailability(enumOnOffSwitchSetting onOffSwitchSetting, long timeIndexBecomeAvailable, long timeIndexBecomeUnavailable)
-        {
-            _onOffSwitchSetting = onOffSwitchSetting;
-            _timeIndexBecomeAvailable = timeIndexBecomeAvailable;
-            _timeIndexBecomeUnavailable = timeIndexBecomeUnavailable;
-        }
-        // set up the resource availability
-        public void SetupResourceRequirement(int IDOfTheResourceRequiredToBeAvailable)
-        {
-            _hasResourceCondition = true;
-            _IDOfTheResourceRequiredToBeAvailable = IDOfTheResourceRequiredToBeAvailable;
-
-        }
         // set up cost
         public void SetUpCost(double fixedCost, double costPerUnitOfTime, double penaltyForSwitchingFromOnToOff)
         {
@@ -150,67 +102,36 @@ namespace SimulationLib
             _penaltyForSwitchingFromOnToOff = penaltyForSwitchingFromOnToOff;
         }
 
-        // set up dynamic employment
-        public void SetupDynamicEmployment(bool remainsOnOnceSwitchedOn)
-        {
-            _remainsOnOnceSwitchedOn = remainsOnOnceSwitchedOn;
-        }
-
         // support methods
-        public static enumActionType ConvertToActionType(string strInterventionType)
+        public static EnumActionType ConvertToActionType(string strInterventionType)
         {
-            enumActionType interventionType = enumActionType.Default;
+            EnumActionType interventionType = EnumActionType.Default;
             switch (strInterventionType)
             {
                 case "Default":
-                    interventionType = enumActionType.Default;
+                    interventionType = EnumActionType.Default;
                     break;
                 case "Additive":
-                    interventionType = enumActionType.Additive;
-                    break;
-                case "Mutually Exclusive":
-                    interventionType = enumActionType.MutuallyExclusive;
+                    interventionType = EnumActionType.Additive;
                     break;
             }
             return interventionType;
         }
-        public static enumOnOffSwitchSetting ConvertToOnOffSwitchSettings(string strOnOffSwitchSetting)
+        public static EnumSwitchStatus ConvertToSwitchValue(string value)
         {
-            enumOnOffSwitchSetting onOffSwitchSetting = enumOnOffSwitchSetting.Predetermined;
-            switch (strOnOffSwitchSetting)
-            {
-                case "Predetermined":
-                    onOffSwitchSetting = enumOnOffSwitchSetting.Predetermined;
-                    break;
-                case "Periodic":
-                    onOffSwitchSetting = enumOnOffSwitchSetting.Periodic;
-                    break;
-                case "Threshold-Based":
-                    onOffSwitchSetting = enumOnOffSwitchSetting.ThresholdBased;
-                    break;
-                case "Interval-Based":
-                    onOffSwitchSetting = enumOnOffSwitchSetting.IntervalBased;
-                    break;
-                case "Dynamic":
-                    onOffSwitchSetting = enumOnOffSwitchSetting.Dynamic;
-                    break;
-            }
-            return onOffSwitchSetting;
-        }
-        public static enumSwitchValue ConvertToSwitchValue(string value)
-        {
-            enumSwitchValue switchValue = enumSwitchValue.On;
+            EnumSwitchStatus switchValue = EnumSwitchStatus.On;
 
             switch (value)
             {
                 case "On":
-                    switchValue = enumSwitchValue.On;
+                    switchValue = EnumSwitchStatus.On;
                     break;
                 case "Off":
-                    switchValue = enumSwitchValue.Off;
+                    switchValue = EnumSwitchStatus.Off;
                     break;
             }
             return switchValue;
         }
     }
+
 }

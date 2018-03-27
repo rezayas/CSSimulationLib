@@ -43,6 +43,22 @@ namespace SimulationLib
             }
             return onOffSwitchSetting;
         }
+
+        public static EnumSwitchStatus ConvertToSwitchValue(string value)
+        {
+            EnumSwitchStatus switchValue = EnumSwitchStatus.On;
+
+            switch (value)
+            {
+                case "On":
+                    switchValue = EnumSwitchStatus.On;
+                    break;
+                case "Off":
+                    switchValue = EnumSwitchStatus.Off;
+                    break;
+            }
+            return switchValue;
+        }
     }
 
     // predetermined decision rule 
@@ -103,11 +119,8 @@ namespace SimulationLib
     // dynamic decision rule 
     public class Dynamic:SimulationDecisionRule
     {
-        private bool _remainsOnOnceSwitchedOn = false;
-
-        public Dynamic(bool remainsOnOnceSwitchedOn)
+        public Dynamic()
         {
-            _remainsOnOnceSwitchedOn = remainsOnOnceSwitchedOn;
         }
     }
 

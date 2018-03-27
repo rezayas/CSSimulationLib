@@ -7,7 +7,7 @@ using ComputationLib;
 
 namespace SimulationLib
 {
-    public enum enumResponseTransformation : int
+    public enum EnumResponseTransformation : int
     {
         None = 0,
         NaturalLog_PositiveArgument = 1,
@@ -15,7 +15,7 @@ namespace SimulationLib
         SquaredRoot_PositiveArgument = 3,
         SquaredRoot_NegativeArgument = 4,
     }
-    public enum enumQFunctionApproximationMethod
+    public enum EnumQFunctionApproximationMethod
     {
         Q_Approximation = 0,
         A_Approximation = 1,
@@ -1183,6 +1183,10 @@ namespace SimulationLib
         {
             _decisionIntervalReward += reward;
         }
+    }
+
+    public class POMDP_ADP
+    {
     }
 
 }

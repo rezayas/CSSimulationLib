@@ -10,10 +10,25 @@ namespace SimulationLib
     {
         Default = 1,    // represents the "no action" alternative that is always on
         Additive = 2,   // represents actions that could be added to the "default" interventions
-    }
+    }    
 
     public class SimulationAction
     {
+        public static EnumActionType ConvertToActionType(string value)
+        {
+            EnumActionType actionType = EnumActionType.Default;
+
+            switch (value)
+            {
+                case "Default":
+                    actionType = EnumActionType.Default;
+                    break;
+                case "Aditive":
+                    actionType = EnumActionType.Additive;
+                    break;
+            }
+            return actionType;
+        }
 
         public int Index{ get; set; }   // 0, 1, 2, ...
         public string Name { get; set; }
@@ -58,6 +73,20 @@ namespace SimulationLib
             FixedCost = fixedCost;
             CostPerDecisionPeriod = costPerDecisionPeriod;
             PenaltyForSwitchingFromOnToOff= penaltyForSwitchingFromOnToOff;
+        }
+
+        // find the switch status
+        public int FindSwitchStatus(int timeIndex)
+        {
+
+            return 0;
+        }
+
+        public void ResetForAnotherSimulation()
+        {
+            IfHasBeenTrunedOnBefore = false;
+            NumOfSwitchesOccured = 0;
+            NumOfDecisionPeriodsOverWhichThisInterventionWasUsed = 0;
         }
 
     }

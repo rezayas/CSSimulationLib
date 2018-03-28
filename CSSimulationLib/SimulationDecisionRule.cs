@@ -20,7 +20,7 @@ namespace SimulationLib
 
     public abstract class SimulationDecisionRule
     {
-        public static EnumDecisionRule ConvertToOnOffSwitchSettings(string strOnOffSwitchSetting)
+        public static EnumDecisionRule ConvertToDecisionRule(string strOnOffSwitchSetting)
         {
             EnumDecisionRule onOffSwitchSetting = EnumDecisionRule.Predetermined;
             switch (strOnOffSwitchSetting)
@@ -59,31 +59,28 @@ namespace SimulationLib
             }
             return switchValue;
         }
+
+        
     }
 
     // predetermined decision rule 
-    public class Predetermined : SimulationDecisionRule
+    public class DecionRule_Predetermined : SimulationDecisionRule
     {
-        EnumSwitchStatus _predeterminedSwitchValue = EnumSwitchStatus.Off;
+        public EnumSwitchStatus PredeterminedSwitchValue { get; set; } = EnumSwitchStatus.Off;
 
-        public Predetermined(EnumSwitchStatus predeterminedSwitchValue)
+        public DecionRule_Predetermined(EnumSwitchStatus predeterminedSwitchValue)
         {
-            _predeterminedSwitchValue = predeterminedSwitchValue;
-        }
-
-        public EnumSwitchStatus PredeterminedSwitchValue
-        {
-            get { return _predeterminedSwitchValue; }
+            PredeterminedSwitchValue = predeterminedSwitchValue;
         }
     }
 
     // periodic decision rule 
-    public class Periodic : SimulationDecisionRule
+    public class DecionRule_Periodic : SimulationDecisionRule
     {
         private int _frequency_nOfDcisionPeriods = 0;
         private int _duration_nOfDcisionPeriods = 0;
 
-        public Periodic(int frequency_nOfDcisionPeriods, int duration_nOfDcisionPeriods)
+        public DecionRule_Periodic(int frequency_nOfDcisionPeriods, int duration_nOfDcisionPeriods)
         {
             _frequency_nOfDcisionPeriods = frequency_nOfDcisionPeriods;
             _duration_nOfDcisionPeriods = duration_nOfDcisionPeriods;
@@ -91,12 +88,12 @@ namespace SimulationLib
     }
 
     // threshold-based decision rule 
-    public class ThresholdBased : SimulationDecisionRule
+    public class DecionRule_ThresholdBased : SimulationDecisionRule
     {
         private double _threshold = 0;
         private int _duration_nOfTimeIndices= 0;
 
-        public ThresholdBased(double threshold, int duration_nOfTimeIndices)
+        public DecionRule_ThresholdBased(double threshold, int duration_nOfTimeIndices)
         {
             _threshold = threshold;
             _duration_nOfTimeIndices = duration_nOfTimeIndices;
@@ -104,12 +101,12 @@ namespace SimulationLib
     }
 
     // interval-based decision rule 
-    public class IntervalBased : SimulationDecisionRule
+    public class DecionRule_IntervalBased : SimulationDecisionRule
     {
         private int _timeIndexToTurnOn;
         private int _timeIndexToTurnOff;
 
-        public IntervalBased(int timeIndexToTurnOn, int timeIndexToTurnOff)
+        public DecionRule_IntervalBased(int timeIndexToTurnOn, int timeIndexToTurnOff)
         {
             _timeIndexToTurnOn = timeIndexToTurnOn;
             _timeIndexToTurnOff = timeIndexToTurnOff;
@@ -117,9 +114,9 @@ namespace SimulationLib
     }
 
     // dynamic decision rule 
-    public class Dynamic:SimulationDecisionRule
+    public class DecionRule_Dynamic : SimulationDecisionRule
     {
-        public Dynamic()
+        public DecionRule_Dynamic()
         {
         }
     }

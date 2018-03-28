@@ -8,15 +8,14 @@ using RandomVariateLib;
 
 namespace SimulationLib
 {
-    class SimulationDecisionMaker
+    public class SimulationDecisionMaker
     {
-        private List<SimulationAction> Actions { get; set; } = new List<SimulationAction>();
-
+        public List<SimulationAction> Actions { get; set; } = new List<SimulationAction>();
         public int NumOfActions { get; set; } = 0;
         public int NumOfActionsControlledDynamically { get; set; } = 0;
-        private int[] CurrentActionCombination { get; set; } = new int[0];   // array of 0 and 1 to represent which action is on or off
-        private int[] DefaultActionCombination { get; set; } = new int[0];   // if all other actions become unavailable, we will use this action combination 
-
+        public int[] CurrentActionCombination { get; set; } = new int[0];   // array of 0 and 1 to represent which action is on or off
+        public int[] DefaultActionCombination { get; set; } = new int[0];   // if all other actions become unavailable, we will use this action combination 
+        public double AccumulatedCost { get; set; } = 0; // cost accumulated due to actions and decision making
         // Instantiation
         public SimulationDecisionMaker()
         {
@@ -42,14 +41,28 @@ namespace SimulationLib
             }
 
             // check if this action is controlled dynamically
-            if (action.DecisionRule is Dynamic)
+            if (action.DecisionRule is DecionRule_Dynamic)
             {
                 ++NumOfActionsControlledDynamically;
             }
         }
-                
+
+        // find a new action combination 
+        public int[] FindNewActionCombination(int timeIndex)
+        {
+            int[] newActionCombination = new int[0];
+
+            // find the switch status of each action
+            foreach (SimulationAction simAction in Actions)
+            {
+                newActionCombination.Append(simAction.FindSwitchStatus(timeIndex));
+            }            
+            return newActionCombination;
+        }
+
+        
         // update the currect action combination       
-        public void ChangeCurrentActionCombination(int[] newActionCombination, ref double resultingCost)
+        public void UpdateCurrentActionCombination(int[] newActionCombination)
         {
             int thisActionIndex = 0;
             foreach (SimulationAction thisAction in Actions)
@@ -58,32 +71,38 @@ namespace SimulationLib
                 // calculate the number of switches        
                 if (CurrentActionCombination[thisActionIndex] != newActionCombination[thisActionIndex])
                     thisAction.NumOfSwitchesOccured += 1;
-                // calculate the fixed cost
+                
+                // if turning on
                 if (CurrentActionCombination[thisActionIndex] == 0 && newActionCombination[thisActionIndex] == 1)
                 {
-                    resultingCost += thisAction.FixedCost;
+                    AccumulatedCost += thisAction.FixedCost;
                     thisAction.NumOfSwitchesOccured += 1;
+                    thisAction.IfHasBeenTrunedOnBefore = true;                    
                 }
+                
                 // calculate the penalty cost for switching from on to off
                 if (thisAction.PenaltyForSwitchingFromOnToOff > 0)
                 {
                     if (CurrentActionCombination[thisActionIndex] == 1 && newActionCombination[thisActionIndex] == 0)
-                        resultingCost += thisAction.PenaltyForSwitchingFromOnToOff;
+                        AccumulatedCost += thisAction.PenaltyForSwitchingFromOnToOff;
                 }
+                
                 // update the new action
                 CurrentActionCombination[thisActionIndex] = newActionCombination[thisActionIndex];
+
                 // update the cost per unit of time for this action combination
                 if (CurrentActionCombination[thisActionIndex] == 1)
                 {
-                    resultingCost += thisAction.CostPerDecisionPeriod;
+                    AccumulatedCost += thisAction.CostPerDecisionPeriod;
                     ++thisAction.NumOfDecisionPeriodsOverWhichThisInterventionWasUsed;
                 }
             }
         }
-        public void ChangeCurrentActionCombination(int[] newActionCombination)
+
+        public void ResetForAnotherSimulationRun()
         {
-            double tempCost = 0;
-            ChangeCurrentActionCombination(newActionCombination, ref tempCost);
+            AccumulatedCost = 0;
+            CurrentActionCombination = (int[])DefaultActionCombination.Clone();
         }
         
     }
